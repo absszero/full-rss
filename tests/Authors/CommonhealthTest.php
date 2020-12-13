@@ -13,7 +13,7 @@ class CommonhealthTest extends \TestCase
         ->shouldReceive('getCacheByUrls')->andReturn($this->bodies());
 
         $author = app(Commonhealth::class);
-        $this->assertContains('三采文化出版', $author->toXml());
+        $this->assertStringContainsString('三采文化出版', $author->toXml());
     }
 
     protected function bodies()

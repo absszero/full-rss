@@ -13,7 +13,7 @@ class ParentingTest extends \TestCase
         ->shouldReceive('getCacheByUrls')->andReturn($this->bodies());
 
         $author = app(Parenting::class);
-        $this->assertContains('決定性的影響力', $author->toXml());
+        $this->assertStringContainsString('決定性的影響力', $author->toXml());
     }
 
     protected function bodies()
