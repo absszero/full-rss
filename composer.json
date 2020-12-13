@@ -5,9 +5,10 @@
     "license": "MIT",
     "type": "project",
     "require": {
-        "laravel/lumen-framework": "5.8.*",
+        "laravel/lumen-framework": "^6.0",
         "vlucas/phpdotenv": "^3.3",
-        "guzzlehttp/guzzle": "^6.2"
+        "guzzlehttp/guzzle": "^6.2",
+        "laravel/helpers": "^1.4"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
