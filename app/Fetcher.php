@@ -38,6 +38,9 @@ class Fetcher
     {
         $bodies = [];
         foreach ($urls as $url) {
+            if (is_array($url)) {
+                $url = $url['url'];
+            }
             $bodies[$url] = Cache::get($url);
         }
 
@@ -47,6 +50,10 @@ class Fetcher
     public function cacheByUrls(array $urls)
     {
         $urls = array_filter($urls, function ($url) {
+            if (is_array($url)) {
+                $url = $url['url'];
+            }
+
             if (!Cache::has($url)) {
                 return $url;
             }
@@ -54,7 +61,15 @@ class Fetcher
 
         $promises = [];
         foreach ($urls as $url) {
-            $promises[$url] = $this->client->requestAsync('GET', $url, $this->options);
+            $options = $this->options;
+            $method = 'GET';
+            if (is_array($url)) {
+                $method = $url['method'];
+                $options = array_merge($options, $url['options']);
+                $url = $url['url'];
+            }
+
+            $promises[$url] = $this->client->requestAsync($method, $url, $options);
         }
 
         $results = Promise\settle($promises)->wait();

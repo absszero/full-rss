@@ -21,15 +21,14 @@ class Parenting extends Author
     {
         $links = [];
         foreach ($this->document->items() as $item) {
-            $item->link = $this->getNormalisedLink($item);
-            $links[] = $item->link;
+            $links[] = $this->getNormalisedLink($item);
         }
 
         $this->fetcher->cacheByUrls($links);
         $this->bodies = $this->fetcher->getCacheByUrls($links);
 
         foreach ($this->document->items() as $item) {
-            $content = $this->getContent($item->link);
+            $content = $this->getContent($item);
 
             if ($content) {
                 $item->description = $content;
@@ -37,34 +36,36 @@ class Parenting extends Author
         }
     }
 
-    protected function getContent($link)
+    protected function getContent(Element $item)
     {
-        $body = array_get($this->bodies, $link);
+        $link = $this->getNormalisedLink($item);
+
+        $body = array_get($this->bodies, $link['url']);
 
         if (!$body) {
             return;
         }
 
-        $article = Document::parse($body, 'html');
-        if (!$article) {
-            return;
-        }
+        $body = preg_replace('/[[:cntrl:]]/', '', $body);
+        $body = json_decode($body);
 
-        $elements = $article->xpath("//article");
-
-        if (0 == $elements->length) {
-            return;
-        }
-
-        $content = $article->toHtml($elements->item(0));
-        return $content;
+        return $body->data->article->content;
     }
 
     private function getNormalisedLink(Element $item)
     {
-        $info = parse_url($item->link);
-        $info['host'] = str_replace('www.parenting.com.tw', 'm.parenting.com.tw', $info['host']);
-        $link = $info['scheme'] . '://' . $info['host'] . $info['path'];
-        return $link;
+        preg_match('/\d+/', $item->link, $matches);
+
+        return [
+            'url' => 'https://www-gql.parenting.com.tw/graphql?' . $matches[0],
+            'method' => 'POST',
+            'options' => [
+                'json' => [
+                    "operationName" => "article",
+                    "variables" =>  ["id" => $matches[0]],
+                    "query" =>  "query article(\$id: ID!) {article(id: \$id) {content}}"
+                ]
+            ]
+        ];
     }
 }
